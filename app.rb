@@ -12,8 +12,16 @@ class MyApp < Sinatra::Application
   # register the metric
   prometheus.register(http_requests)
 
+  viewer_gauge = Prometheus::Client::Gauge.new(:viewers, docstring: 'E_TOOMANY_VIEWERS', labels: [:service])
+  prometheus.register(viewer_gauge)
+
   get '/' do
     http_requests.increment
     'Hello world!'
+  end
+
+  get '/twitchy' do
+    num_viewers = rand(50)
+    viewer_gauge.set(num_viewers, labels: { service: 'twitch' })
   end
 end
